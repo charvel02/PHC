@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/about"
+            android:title="@string/about"/>
+        <item
+            android:id="@+id/disclaimer"
+            android:title="@string/disclaimer"/>
+        <item
+            android:id="@+id/privacy_policy"
+            android:title="@string/privacy_policy"/>
+        <item
+            android:id="@+id/terms_of_use"
+            android:title="@string/terms_of_use"/>
+        <item
+            android:id="@+id/select_location"
+            android:title="@string/select_location">
+        </item>
+        <item
+            android:id="@+id/faqs"
+            android:title="@string/faqs"/>
+    </group>
+</menu>
