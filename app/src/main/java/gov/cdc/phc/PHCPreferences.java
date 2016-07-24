@@ -7,5 +7,6 @@ public class PHCPreferences {
     public static final String PREFS_NAME = "PHCPrefsFile";
     public static final String SHOW_BANDWIDTH_ALERT = "ShowBandwidthAlert";
     public static final String LOCATION = "Location";
+    public static final String VERSION = "Version";
 
 }

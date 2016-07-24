@@ -3,6 +3,8 @@ package gov.cdc.phc;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -30,10 +32,13 @@ public class MainActivity extends AppCompatActivity {
     private Button getStarted;
     private Drawer drawer;
     private Toolbar toolbar;
+    private SiteCatalystController siteCatalystController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        siteCatalystController = new SiteCatalystController();
 
         preferences = getSharedPreferences(PHCPreferences.PREFS_NAME, 0);
         prefEditor = preferences.edit();
@@ -42,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
             prefEditor.putString(PHCPreferences.LOCATION, Constants.OFF_SITE_LOCATION);
             prefEditor.commit();
         }
+        prefEditor.putString(PHCPreferences.VERSION, getApplicationVersionName()).commit();
+        siteCatalystController.trackAppLaunchEvent();
+        siteCatalystController.trackNavigationEvent(Constants.SC_PAGE_TITLE_MAIN, Constants.SC_SECTION_MAIN);
+
 
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -117,13 +126,13 @@ public class MainActivity extends AppCompatActivity {
     private void promptForPassword(){
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         final View passwordEntry = layoutInflater.inflate(R.layout.select_location_alert, null);
-        AlertDialog.Builder enterPassword = new AlertDialog.Builder(MainActivity.this);
-        enterPassword.setTitle("Please Enter Password")
-                .setView(passwordEntry)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String pw = "CHANGEME";
+
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        String pw = "PHC RCT";
                         String userInput = null;
                         EditText passwordField = (EditText) passwordEntry.findViewById(R.id.select_location_password);
                         userInput = passwordField.getText().toString();
@@ -135,21 +144,26 @@ public class MainActivity extends AppCompatActivity {
                         else{
                             promptForPassword();
                         }
-
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
                         dialog.cancel();
+                        break;
 
-                    }
-                });
+                }
+            }
+        };
+
+        AlertDialog.Builder enterPassword = new AlertDialog.Builder(MainActivity.this);
+        enterPassword.setTitle("Please Enter Password")
+                .setView(passwordEntry)
+                .setPositiveButton("OK", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener);
         AlertDialog alert = enterPassword.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
     }
     private void selectLocation(){
+        siteCatalystController.trackNavigationEvent(Constants.SC_PAGE_TITLE_SELECT_LOCATION, Constants.SC_EVENT_NAV_SECTION);
         final CharSequence[] items = new CharSequence[2];
         items[0] = "Offsite";
         items[1] = "Onsite (Clinic)";
@@ -159,34 +173,33 @@ public class MainActivity extends AppCompatActivity {
         } else {
             checked = 1;
         }
-        AlertDialog.Builder selectLocation = new AlertDialog.Builder(MainActivity.this);
-        selectLocation.setTitle("Select Location")
-                .setSingleChoiceItems(items, checked, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
 
-                    }
-                })
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
                         ListView lw = ((AlertDialog)dialog).getListView();
                         int checkedItem = lw.getCheckedItemPosition();
                         if(checkedItem == 1) {
                             prefEditor.putString(PHCPreferences.LOCATION, Constants.ON_SITE_LOCATION);
+                            siteCatalystController.trackEvent(Constants.SC_EVENT_ONSITE_SELECTED, Constants.SC_PAGE_TITLE_SELECT_LOCATION, Constants.SC_EVENT_NAV_SECTION);
                         } else {
                             prefEditor.putString(PHCPreferences.LOCATION, Constants.OFF_SITE_LOCATION);
+                            siteCatalystController.trackEvent(Constants.SC_EVENT_OFFSITE_SELECTED, Constants.SC_PAGE_TITLE_SELECT_LOCATION, Constants.SC_EVENT_NAV_SECTION);
                         }
                         prefEditor.commit();
-
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
                         dialog.cancel();
-                    }
-                });
+                }
+            }
+        };
+        AlertDialog.Builder selectLocation = new AlertDialog.Builder(MainActivity.this);
+        selectLocation.setTitle("Select Location")
+                .setSingleChoiceItems(items, checked, null)
+                .setPositiveButton("OK", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener);
         AlertDialog alert = selectLocation.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
@@ -196,26 +209,28 @@ public class MainActivity extends AppCompatActivity {
         final View bandwidth = layoutInflater.inflate(R.layout.bandwidth_usage_alert, null);
 
         final AlertDialog.Builder bandwidthAlert = new AlertDialog.Builder(MainActivity.this);
-        bandwidthAlert.setTitle(R.string.bandwidth_alert_title)
-                .setView(bandwidth)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
                         CheckBox bandwidthCheckBox = (CheckBox) bandwidth.findViewById(R.id.bandwidth_usage_checkbox);
                         if(bandwidthCheckBox.isChecked()){
                             prefEditor.putBoolean(PHCPreferences.SHOW_BANDWIDTH_ALERT, false).commit();
                         }
-
                         dialog.dismiss();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
                         finishAffinity();
                         dialog.cancel();
-                    }
-                });
+                }
+            }
+        };
+        bandwidthAlert.setTitle(R.string.bandwidth_alert_title)
+                .setView(bandwidth)
+                .setPositiveButton("OK", dialogClickListener)
+                .setNegativeButton("Cancel", dialogClickListener);
         AlertDialog alert = bandwidthAlert.create();
         alert.setCanceledOnTouchOutside(false);
         alert.show();
@@ -228,5 +243,14 @@ public class MainActivity extends AppCompatActivity {
         else {
             super.onBackPressed();
         }
+    }
+
+    public String getApplicationVersionName() {
+        PackageManager packageManager = getPackageManager();
+        try {
+            PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(), 0);
+            return packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException ex) {} catch(Exception e){}
+        return "";
     }
 }
