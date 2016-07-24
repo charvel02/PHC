@@ -67,17 +67,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         });
         webView.getSettings()
                 .setJavaScriptEnabled(true);
-
-        // Add Download listener in case user clicks link to a file as most MMWR articles have a link to a PDF file.
-        webView.setDownloadListener(new DownloadListener() {
-            @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(url));
-                startActivity(intent);
-            }
-        });
-
+        
         // Enable zoom controls
         webView.getSettings().setBuiltInZoomControls(true);
         webView.getSettings().setDisplayZoomControls(false);
