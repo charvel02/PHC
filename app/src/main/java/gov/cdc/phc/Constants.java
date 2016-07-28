@@ -10,7 +10,8 @@ public class Constants {
     public static final String OFF_SITE_URL = "https://positivehealthcheck.cdc.gov/cbi/";
     public static final String ON_SITE_LOGOFF_URL = "https://positivehealthcheck.cdc.gov/home/logoff";
     public static final String OFF_SITE_LOGOFF_URL = "https://positivehealthcheck.cdc.gov/cbi/logoff";
-    public static final String EXTRA_INFO_URL = "https://positivehealthcheck.cdc.gov/extrainfo/";
+    public static final String ON_SITE_EXTRA_INFO_URL = "https://positivehealthcheck.cdc.gov/extrainfo/home";
+    public static final String OFF_SITE_EXTRA_INFO_URL = "https://positivehealthcheck.cdc.gov/extrainfo/cbi";
 
     //SiteCatalyst Strings
     public static final String SC_EVENT_APP_LAUNCH = "Application:Launch";

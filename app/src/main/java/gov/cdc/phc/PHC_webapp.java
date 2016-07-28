@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -41,13 +42,17 @@ public class PHC_webapp extends AppCompatActivity {
         mWebView.setWebViewClient(new WebViewClient(){
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if(url.startsWith(Constants.EXTRA_INFO_URL)){
+                //Log.d("PHCWebApp", "view attempting to load URL: " +url);
+                //Log.d("PHCWebApp", "check for 'extrainfo' in url");
+                //Log.d("PHCWebApp", "url contains 'extrainfo'? " +url.toLowerCase().contains("extrainfo"));
+                if(url.toLowerCase().contains("extrainfo")){
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                     return true;
                 }
                 else return false;
             }
         });
+        //Log.d("PHC|Webapp",PHC_URL);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
         mWebView.loadUrl(PHC_URL);
